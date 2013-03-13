@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.add_dependency              "tilt",          ">= 1.0"
 
   s.add_development_dependency  "bundler",     ">= 1.0.0"
-  s.add_development_dependency  "rspec-core",  ">= 2.0.0.beta.20"
   s.add_development_dependency  "nanotest"
   s.add_development_dependency  "nanotest_extensions"
   s.add_development_dependency  "rake"

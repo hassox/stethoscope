@@ -103,3 +103,21 @@ By default, Stethoscope provides a simple template to render the responses of th
 You can overwrite the template used:
 
     Stethoscope.template = Tilt.new("my_new_tempalte_file.haml")
+
+
+## Testing
+
+_How do I run the project's automated tests?_
+
+### Run Tests
+
+* `bundle exec rake test`
+
+## Contributing changes
+
+* Fork it.
+* Create a branch (git checkout -b my_changes)
+* Commit your changes (git commit -am "Added Some Changes")
+* Push to the branch (git push origin my_changes)
+* Open a Pull Request
+* Enjoy a refreshing Dr. Pepper© and wait
