@@ -57,6 +57,24 @@ Returning a response _:status_ outside 200..299 will trigger Stethoscope to retu
 
 Any exceptions are caught and added to the response with the _:error_ key.  The template can then handle them appropriately
 
+Checks can be placed into buckets to target specific checks.
+
+    Stethoscope.check :database, :critical, :quick do |response|
+      ActiveRecord::Base.connection.execute("select 1")
+    end
+
+    Stethoscope.check :something_big, :critical, :expensive do |response|
+      do_something_expensive
+    end
+
+Now you have the put into buckets, you can choose which checks you want to execute. By default, all check are performed, but if you want to check only one type of check (all the checks in a given bucket) then you can just append the bucket name onto the url.
+
+#### Example
+
+    curl http://my.awesomeapp.com/heartbeat/critical.json # check the critical checks only
+    curl http://my.awesomeapp.com/heartbeat/quick.json    # check the quick checks only
+    curl http://my.awesomeapp.com/heartbeat.json          # check all the things
+
 #### Defaults
 
 * ActiveRecord

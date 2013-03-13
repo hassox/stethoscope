@@ -101,6 +101,29 @@ class TestStethoscope
         response = get "/heartbeat"
         assert { response.status == 500 }
       end
+
+      test do
+        Stethoscope.check(:foo, :foo, :bar){ |response| response[:status] = 200; response[:foo] = :test1 }
+        Stethoscope.check(:bar, :bar){ |response| response[:status] = 200; response[:bar] = :test2 }
+
+        response = get "/heartbeat/foo.json"
+        results = JSON.parse(response.body)
+        assert { response.status == 200 }
+        assert { results['checks']['foo']['foo'] == 'test1' }
+        assert { !results['checks'].key?('bar') }
+
+        response = get "/heartbeat/bar.json"
+        results = JSON.parse(response.body)
+        assert { response.status == 200 }
+        assert { results['checks']['foo']['foo'] == 'test1' }
+        assert { results['checks']['bar']['bar'] == 'test2' }
+
+        response = get "/heartbeat.json"
+        results = JSON.parse(response.body)
+        assert { response.status == 200 }
+        assert { results['checks']['foo']['foo'] == 'test1' }
+        assert { results['checks']['bar']['bar'] == 'test2' }
+      end
     end
   end
 end

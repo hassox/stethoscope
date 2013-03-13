@@ -2,6 +2,7 @@ require 'dictionary'
 require 'tilt'
 require 'json'
 require 'stethoscope/rails'
+require 'set'
 
 # Stethoscope is Rack middleware that provides a heartbeat function to an application.
 #
@@ -16,6 +17,22 @@ require 'stethoscope/rails'
 #
 # @see Rack
 class Stethoscope
+  class Buckets < Hash
+    def []=(key,val)
+      super(key.to_s, val)
+    end
+
+    def [](key)
+      super(key.to_s)
+    end
+  end
+
+  @buckets = Buckets.new { |h, k| h[k.to_s] = Set.new }
+
+  def self.buckets
+    @buckets
+  end
+
   # Set the url to check for the heartbeat in this application
   #
   # @example
@@ -40,7 +57,7 @@ class Stethoscope
   # @see Stethoscope.check
   # @api public
   def self.checks
-    @checks ||= Dictionary.new
+    @checks ||= {}
   end
 
   # Add a check to Stethoscope
@@ -63,7 +80,10 @@ class Stethoscope
   #
   # @see Stethoscope.check
   # @api public
-  def self.check(name, &blk)
+  def self.check(name, *_buckets_, &blk)
+    _buckets_.each do |bucket|
+      buckets[bucket] << name
+    end
     checks[name] = blk
   end
 
@@ -74,6 +94,9 @@ class Stethoscope
   # @see Stethoscope.check
   # @api public
   def self.remove_check(name)
+    buckets.each do |bucket, _checks_|
+      _checks_.delete(name)
+    end
     checks.delete(name)
   end
 
@@ -81,6 +104,7 @@ class Stethoscope
   # @see Stethoscope.check
   # @api public
   def self.clear_checks
+    buckets.clear
     checks.clear
   end
 
@@ -116,7 +140,9 @@ class Stethoscope
       h[k] = {:status => 200}
     end
 
-    Stethoscope.checks.each do |name, check|
+    _checks_ = checks_to_run(request.path)
+
+    _checks_.each do |name, check|
       begin
         check.call(responses[name])
       rescue => e
@@ -142,12 +168,27 @@ class Stethoscope
   end
 
   private
+  def checks_to_run(path)
+    bucket = find_bucket_to_check(path)
+    return Stethoscope.checks if bucket.nil?
+    Stethoscope.buckets[bucket].inject({}){|h, name| h[name] = Stethoscope.checks[name]; h}
+  end
+
+  def find_bucket_to_check(path)
+    path =~ %r|#{self.class.url}\/([^\/\.]+)(\.(json))?$|
+    $1
+  end
+
   def check_heartbeat?(path)
-    path == self.class.url || path == (self.class.url + '.json')
+    regexps = [ %r|#{self.class.url}(\.json)?| ]
+    self.class.buckets.each do |name, _|
+      regexps << %r|#{File.join(self.class.url, name)}(\.json)|
+    end
+    regexps.any?{|r| path =~ r}
   end
 
   def format(path)
-    return :json if path == (self.class.url + '.json')
+    return :json if path =~ /\.json$/
     :html
   end
 end
