@@ -1,3 +1,9 @@
 pkg/*
 *.gem
-.bundle
+
+/.bundle
+bundle/
+.DS_Store
+/.env
+
+.rvmrc
