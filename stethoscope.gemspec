@@ -7,12 +7,11 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Daniel Neighman']
   s.email       = ['has.sox@gmail.com']
-  s.homepage    = "http://github.com/hassox/stethoscope"
+  s.homepage    = "https://github.com/hassox/stethoscope"
   s.summary     = "Heartbeat middleware for responding to heartbeat pings"
   s.description = "Heartbeat middleware for responding to heartbeat pings"
 
   s.required_rubygems_version = ">= 1.3.6"
-  s.rubyforge_project         = "stethoscope"
 
   s.add_dependency              "rack",          ">  1.0"
   s.add_dependency              "dictionary",    ">= 1.0"
